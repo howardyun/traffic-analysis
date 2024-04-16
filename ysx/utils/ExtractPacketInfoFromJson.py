@@ -60,8 +60,6 @@ def extract_packet_info(json_file):
                 app_protocol = 'RTSP'
             elif 'icmp' in layer_keys:
                 app_protocol = 'ICMP'
-            else:
-                print(layer_keys)
             # 更多协议可以继续添加
 
             packet_info_list.append({
@@ -80,7 +78,8 @@ def extract_packet_info(json_file):
 
 
 def main():
-    packets = extract_packet_info(saveUrl + 'capture_sina.json')
+    packets = extract_packet_info(saveUrl + 'capture_bilibili.json')
+
     for packet in packets:
         print(f"Time: {packet['timestamp']}, Size: {packet['size']}, Src IP: {packet['src_ip']}, "
               f"Dst IP: {packet['dst_ip']}, Protocol: {packet['protocol']}, Sub-Protocol: {packet['sub_protocol']}, "
