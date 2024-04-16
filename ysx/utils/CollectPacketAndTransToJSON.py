@@ -2,11 +2,13 @@ import subprocess
 import time
 from selenium import webdriver
 
-website = 'https://www.baidu.com'
+# website = 'http://www.baidu.com'
+website = 'https://www.sina.com.cn'
+
 saveUrl = '../collectData/'
 
 
-def start_capture(interface='en0', output_file=saveUrl + 'capture.pcap'):
+def start_capture(interface='en0', output_file=saveUrl + 'capture_sina.pcap'):
     """启动 tshark 捕获进程"""
     command = ['tshark', '-i', interface, '-f', 'tcp port 443', '-w', output_file]
     process = subprocess.Popen(command)
@@ -45,7 +47,7 @@ def main():
         driver.quit()
 
     # 转换捕获数据为 JSON
-    convert_pcap_to_json(saveUrl + 'capture.pcap', saveUrl + 'capture.json')
+    convert_pcap_to_json(saveUrl + 'capture_sina.pcap', saveUrl + 'capture_sina.json')
 
 
 if __name__ == '__main__':
