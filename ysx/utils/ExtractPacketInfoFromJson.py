@@ -84,6 +84,7 @@ def main():
         print(f"Time: {packet['timestamp']}, Size: {packet['size']}, Src IP: {packet['src_ip']}, "
               f"Dst IP: {packet['dst_ip']}, Protocol: {packet['protocol']}, Sub-Protocol: {packet['sub_protocol']}, "
               f"App-Protocol: {packet['app_protocol']}")
+    print(len(packets))
 
 
 if __name__ == '__main__':
