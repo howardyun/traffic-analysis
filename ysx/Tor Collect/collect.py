@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 import time
 def start_tshark():
     # 指定Tshark的输出文件
-    output_file = "captured_traffic.pcap"
+    output_file = "DatawithTor/captured_traffic.pcap"
     # 启动Tshark进程，捕获特定端口的流量，这里假设使用的是Tor默认的9150端口
     tshark_cmd = [
         "tshark",
@@ -36,6 +36,7 @@ tshark_process, output_file = start_tshark()
 
 driver = webdriver.Firefox(options=options)
 try:
+    # 这个是Tor测试的网站，可以看到Tor是否可以正常启用，我不确定之后是否每次都需要加上这个地方
     driver.get("https://check.torproject.org/")
     time.sleep(10)  # 延时以确保页面充分加载
     header = driver.find_element(By.TAG_NAME, "h1")
