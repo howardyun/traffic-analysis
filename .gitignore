@@ -162,3 +162,5 @@ cython_debug/
 
 # pcap directory
 ysx/collectData/
+
+ysx/Tor Collect/DatawithTor
