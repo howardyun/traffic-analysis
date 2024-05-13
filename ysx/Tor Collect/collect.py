@@ -1,61 +1,50 @@
 import subprocess
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+import time
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 import time
-import os
-
-# 配置 Tshark 以捕获 Tor 浏览器的流量数据
-def start_tshark_capture(output_file="tor_capture.pcapng", interface="lo0"):
+def start_tshark():
+    # 指定Tshark的输出文件
+    output_file = "captured_traffic.pcap"
+    # 启动Tshark进程，捕获特定端口的流量，这里假设使用的是Tor默认的9150端口
     tshark_cmd = [
         "tshark",
-        "-i", interface,  # Network interface
-        "-Y", "tcp.port==9150 || tcp.port==9050",  # Tor SOCKS Proxy ports
-        "-w", output_file  # Output file
+        "-i", "lo",  # lo是本地环回接口，也可能需要更改为您的网络接口，如 eth0
+        "-f", "tcp port 9150",  # 仅捕获通过Tor端口的流量
+        "-w", output_file
     ]
-    return subprocess.Popen(tshark_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return subprocess.Popen(tshark_cmd), output_file
 
-# 配置 Tor 代理
-TOR_PROXY = "127.0.0.1:9050"
+def stop_tshark(tshark_process):
+    tshark_process.terminate()
+    tshark_process.wait()
+    print("Tshark process has been stopped.")
 
-# 配置 Firefox 选项
+# 设置 Firefox 以及 Tor 代理
 options = Options()
-options.headless = False  # 如果需要无头浏览器，将其设置为 True
+options.headless = True  # 无头模式
 options.set_preference("network.proxy.type", 1)
 options.set_preference("network.proxy.socks", "127.0.0.1")
-options.set_preference("network.proxy.socks_port", 9050)
+options.set_preference("network.proxy.socks_port", 9150)  # 确保端口与您的 Tor 配置匹配
 options.set_preference("network.proxy.socks_remote_dns", True)
 
-# 指定 Tor 浏览器的路径
-firefox_binary_path = '/path/to/tor-browser/Browser/firefox'
-options.binary_location = firefox_binary_path
+# 启动 Tshark
+tshark_process, output_file = start_tshark()
 
-# 启动 Tshark 捕获流量
-tshark_proc = start_tshark_capture(output_file="tor_capture.pcapng", interface="lo0")
-
-# 启动 Tor 浏览器
 driver = webdriver.Firefox(options=options)
+try:
+    driver.get("https://check.torproject.org/")
+    time.sleep(10)  # 延时以确保页面充分加载
+    header = driver.find_element(By.TAG_NAME, "h1")
+    if "Congratulations" in header.text:
+        print("Tor is working correctly")
+    else:
+        print("Tor is not working")
+finally:
+    driver.quit()
+    stop_tshark(tshark_process)
+    print(f"Traffic data saved in {output_file}")
 
-# 测试 IP 地址
-driver.get("https://check.torproject.org/")
-time.sleep(5)
-
-# 查找确认文本以确保代理设置正确
-element = driver.find_element(By.TAG_NAME, "h1")
-if "Congratulations" in element.text:
-    print("Tor is working correctly")
-else:
-    print("Tor is not working")
-
-# 抓取目标网页数据
-driver.get("https://example.com")
-time.sleep(5)
-
-# 关闭浏览器
-driver.quit()
-
-# 停止 Tshark 捕获
-tshark_proc.terminate()
-tshark_proc.wait()
-
-print("Traffic capture completed. Saved as 'tor_capture.pcapng'.")
