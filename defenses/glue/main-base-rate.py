@@ -46,7 +46,7 @@ def load_trace(fname, t = 999, noise = False):
             try:    
                 timestamp, length = line.strip().split(ct.TRACE_SEP)
                 pkts.append([float(timestamp), int(length)])
-                if float(timestamp) >= t+0.5:
+                if float(timestamp) >= t+30:
                     break
             except ValueError:
                 logger.warn("Could not split line: %s in %s", line, fname)
@@ -267,8 +267,8 @@ def CreateMergedTrace(traces_path, list_names, N, M, BaseRate):
     '''generate length-N merged trace'''
     '''with prob baserate/(baserate+1) a nonsensitive trace is chosen'''
     '''with prob 1/(baserate+1) a sensitive trace is chosen'''
-    list_sensitive = glob.glob(join(traces_path, '*-*'))
-    list_nonsensitive = list(set(list_names) - set(list_sensitive))
+    list_sensitive = glob.glob(join(traces_path, '*-*.cell'))
+    list_nonsensitive = [f for f in list_names if f.endswith('.cell') and '*-*' not in f]
     
     s1 = len(list_sensitive)
     s2 = len(list_nonsensitive)
@@ -286,8 +286,8 @@ def CreateRandomMergedTrace(traces_path, list_names, N, M,BaseRate):
     '''generate random-length merged trace'''
     '''with prob baserate/(baserate+1) a nonsensitive trace is chosen'''
     '''with prob 1/(baserate+1) a sensitive trace is chosen'''
-    list_sensitive = glob.glob(join(traces_path, '*-*'))
-    list_nonsensitive = list(set(list_names) - set(list_sensitive))
+    list_sensitive = glob.glob(join(traces_path, '*-*.cell'))
+    list_nonsensitive = [f for f in list_names if f.endswith('.cell') and '*-*' not in f]
     
     s1 = len(list_sensitive)
     s2 = len(list_nonsensitive)
@@ -335,6 +335,8 @@ if __name__ == '__main__':
         np.save(join(output_dir,'num.npy'),nums)
 
     l = parallel(output_dir, eval(args.noise), mergedTrace, 20)
+
+
     # l = []
     # cnt = 0
     # for T in mergedTrace:

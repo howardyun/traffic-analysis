@@ -15,7 +15,7 @@ NL = '\n'  # new line
 
 # MPU
 TOR_CELL_SIZE           = 512
-MTU                     = 1
+MTU                     = 1500
 
 # Directions
 IN  = -1

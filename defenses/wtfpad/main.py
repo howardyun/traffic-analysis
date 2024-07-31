@@ -17,11 +17,10 @@ from pparser import Trace, parse, dump
 import logging
 
 logger = logging.getLogger('wtfpad')
-#parameter
 
-MON_SITE_NUM = 10
-MON_INST_NUM = 1
-UNMON_SITE_NUM = 10
+MON_SITE_NUM = 100
+MON_INST_NUM = 100
+UNMON_SITE_NUM = 9800
 OPEN_WORLD = 1
 
 def init_directories(config):
@@ -55,9 +54,10 @@ def main():
     latencies, bandwidths = [], []
     for i in range(MON_SITE_NUM):
         for j in range(MON_INST_NUM):
-            fname = str(i)+'-'+str(j)
-            if os.path.exists(join(args.traces_path,fname)):
-                trace = parse(join(args.traces_path, fname))
+            fname = f"{i}-{j}.cell"
+            trace_path = join(args.traces_path, fname)
+            if os.path.exists(trace_path):
+                trace = parse(trace_path)
                 logger.info("Simulating trace: %s" % fname)
                 simulated = wtfpad.simulate(Trace(trace))
                 # dump simulated trace to results directory
@@ -72,13 +72,14 @@ def main():
                 latencies.append(lat_ovhd)
                 logger.debug("Latency overhead: %s" % lat_ovhd)
             else:
-                logger.warn('File %s does not exist!'%fname)
+                logger.warn('File %s does not exist!' % trace_path)
 
     if OPEN_WORLD:
         for i in range(UNMON_SITE_NUM):
-            fname = str(i)
-            if os.path.exists(join(args.traces_path,fname)):
-                trace = parse(join(args.traces_path, fname))
+            fname = f"{i}.cell"
+            trace_path = join(args.traces_path, fname)
+            if os.path.exists(trace_path):
+                trace = parse(trace_path)
                 logger.info("Simulating trace: %s" % fname)
                 simulated = wtfpad.simulate(Trace(trace))
                 # dump simulated trace to results directory
@@ -93,11 +94,13 @@ def main():
                 latencies.append(lat_ovhd)
                 logger.debug("Latency overhead: %s" % lat_ovhd)
             else:
-                logger.warn('File %s does not exist!'%fname)
+                logger.warn('File %s does not exist!' % trace_path)
 
-    logger.info("Latency overhead: %s" % np.median([l for l in latencies if l > 0.0]))
-    logger.info("Bandwidth overhead: %s" % np.median([b for b in bandwidths if b > 0.0]))
-
+    if latencies and bandwidths:
+        logger.info("Latency overhead: %s" % np.median([l for l in latencies if l > 0.0]))
+        logger.info("Bandwidth overhead: %s" % np.median([b for b in bandwidths if b > 0.0]))
+    else:
+        logger.info("No valid latency or bandwidth data to calculate median.")
 
 def parse_arguments():
     # Read configuration file
@@ -157,7 +160,10 @@ def config_logger(args):
     logger.addHandler(ch)
 
     # Set level format
-    logger.setLevel(logging.INFO)
+    if args.loglevel:
+        logger.setLevel(getattr(logging, args.loglevel.upper(), logging.INFO))
+    else:
+        logger.setLevel(logging.INFO)
 
 
 if __name__ == "__main__":
