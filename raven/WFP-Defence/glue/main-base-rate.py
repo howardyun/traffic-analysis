@@ -89,7 +89,7 @@ def choose_site():
     # global list_names
     # list_names = glob.glob(join(args.traces_path,'*-*'))
     # with open("goodfile.txt","r") as f:
-    with open("nonsens.txt","r") as f:
+    with open("nonsens.txt", "r") as f:
         list_names = list(pd.Series(f.readlines()).str.slice(0,-1))
     noise_site = np.random.choice(list_names,1)[0]
     return noise_site
